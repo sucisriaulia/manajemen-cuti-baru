@@ -55,7 +55,7 @@
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold">Pengajuan Cuti Divisi {{ auth()->user()->division }}</h3>
-                        <a href="{{ route('hrd.leave-requests') }}" 
+                        <a href="{{ route('ketua-divisi.leave-requests') }}" 
                             class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                             Lihat Semua →
                         </a>

@@ -9,17 +9,24 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Route Dashboard - Redirect berdasarkan role
+// --- PERBAIKAN ROUTE DASHBOARD ---
 Route::get('/dashboard', function () {
     $user = auth()->user();
     
+    // 1. Jika Admin, arahkan ke route khusus admin
     if ($user->role === 'admin') {
         return redirect()->route('admin.dashboard');
-    } elseif ($user->role === 'hrd') {
+    } 
+    // 2. Jika HRD, arahkan ke route khusus hrd
+    elseif ($user->role === 'hrd') {
         return redirect()->route('hrd.dashboard');
     }
     
-    return view('dashboard');
+    // 3. Jika Ketua Divisi ATAU Karyawan:
+    // Panggil function dashboard() di AdminController.
+    // Ini PENTING agar logika judul, statistik, dan filter divisi berjalan.
+    return app(AdminController::class)->dashboard();
+    
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -47,6 +54,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/leave-requests', [AdminController::class, 'leaveRequests'])->name('hrd.leave-requests');
         Route::post('/leave-requests/{leaveRequest}/approve', [LeaveRequestController::class, 'approve'])->name('hrd.approve');
         Route::post('/leave-requests/{leaveRequest}/reject', [LeaveRequestController::class, 'reject'])->name('hrd.reject');
+    });
+
+    // Ketua Divisi Routes
+    Route::prefix('ketua-divisi')->group(function () {
+        Route::get('/leave-requests', [AdminController::class, 'leaveRequests'])->name('ketua-divisi.leave-requests');
+        Route::post('/leave-requests/{leaveRequest}/approve', [LeaveRequestController::class, 'approve'])->name('ketua-divisi.approve');
+        Route::post('/leave-requests/{leaveRequest}/reject', [LeaveRequestController::class, 'reject'])->name('ketua-divisi.reject');
     });
 });
 

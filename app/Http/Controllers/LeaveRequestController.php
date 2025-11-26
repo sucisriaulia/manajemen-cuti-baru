@@ -3,118 +3,100 @@
 namespace App\Http\Controllers;
 
 use App\Models\LeaveRequest;
-use App\Models\LeaveQuota;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class LeaveRequestController extends Controller
 {
+    /**
+     * Menampilkan daftar riwayat cuti karyawan.
+     */
     public function index()
     {
-        $user = auth()->user();
-        $leaveRequests = $user->leaveRequests()->latest()->get();
-        
+        // Mengambil data cuti milik user yang sedang login saja
+        $leaveRequests = LeaveRequest::where('user_id', Auth::id())
+            ->latest()
+            ->get();
+
         return view('leave-requests.index', compact('leaveRequests'));
     }
 
+    /**
+     * Menampilkan form untuk membuat pengajuan cuti baru.
+     */
     public function create()
     {
-        $user = auth()->user();
-        $leaveQuota = $user->leaveQuota;
-        
-        return view('leave-requests.create', compact('leaveQuota'));
+        return view('leave-requests.create');
     }
 
+    /**
+     * Menyimpan data pengajuan cuti ke database.
+     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        // 1. Validasi Input sesuai ketentuan soal (Halaman 44)
+        $request->validate([
             'leave_type' => 'required|in:tahunan,sakit',
             'start_date' => 'required|date|after_or_equal:today',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'reason' => 'required|string',
-            'address_during_leave' => 'required|string',
-            'emergency_contact' => 'required|string',
+            'reason' => 'required|string|max:255',
+            // Kolom baru wajib diisi sesuai soal
+            'leave_address' => 'required|string|max:255',
+            'emergency_contact' => 'required|string|max:20',
         ]);
 
-        $user = auth()->user();
-        $leaveQuota = $user->leaveQuota;
+        $user = Auth::user();
 
-        // Hitung total hari kerja
-        $totalDays = $this->calculateWorkDays($validated['start_date'], $validated['end_date']);
+        // 2. Hitung Durasi Cuti (Total Hari)
+        $startDate = Carbon::parse($request->start_date);
+        $endDate = Carbon::parse($request->end_date);
+        // diffInDays menghitung selisih, tambah 1 agar hari pertama terhitung
+        $totalDays = $startDate->diffInDays($endDate) + 1;
 
-        // Cek apakah kuota cukup
-        if ($leaveQuota->remaining_days < $totalDays) {
-            return back()->with('error', 'Kuota cuti tidak mencukupi. Sisa kuota: ' . $leaveQuota->remaining_days . ' hari.');
+        // 3. Validasi Kuota Cuti Tahunan (Halaman 44)
+        if ($request->leave_type === 'tahunan') {
+            // Ambil sisa cuti user, default 12 jika belum diatur
+            $currentBalance = $user->annual_leave_balance ?? 12;
+            
+            if ($currentBalance < $totalDays) {
+                return back()->withErrors(['leave_type' => 'Sisa cuti tahunan Anda tidak mencukupi. Sisa: ' . $currentBalance . ' hari.']);
+            }
         }
 
-        // Buat leave request
+        // 4. Simpan ke Database
         LeaveRequest::create([
             'user_id' => $user->id,
-            'leave_type' => $validated['leave_type'],
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'],
+            'leave_type' => $request->leave_type,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
             'total_days' => $totalDays,
-            'reason' => $validated['reason'],
-            'address_during_leave' => $validated['address_during_leave'],
-            'emergency_contact' => $validated['emergency_contact'],
-            'status' => 'pending',
+            'reason' => $request->reason,
+            'status' => 'pending', // Status awal selalu pending
+            // Data tambahan sesuai soal
+            'leave_address' => $request->leave_address,
+            'emergency_contact' => $request->emergency_contact,
         ]);
 
         return redirect()->route('leave-requests.index')
-            ->with('success', 'Pengajuan cuti berhasil diajukan!');
+            ->with('success', 'Pengajuan cuti berhasil dikirim dan menunggu persetujuan.');
     }
 
+    /**
+     * Menampilkan detail satu pengajuan cuti.
+     */
     public function show(LeaveRequest $leaveRequest)
     {
-        // Pastikan user hanya bisa melihat cuti miliknya sendiri
-        if ($leaveRequest->user_id !== auth()->id()) {
-            abort(403);
+        // Pastikan user hanya bisa melihat cutinya sendiri (kecuali admin/hrd)
+        if (Auth::user()->role === 'karyawan' && $leaveRequest->user_id !== Auth::id()) {
+            abort(403, 'Anda tidak memiliki akses ke data ini.');
         }
 
         return view('leave-requests.show', compact('leaveRequest'));
     }
 
-    public function approve(LeaveRequest $leaveRequest)
-    {
-        $leaveRequest->update(['status' => 'approved']);
-
-        // Update kuota cuti
-        $leaveQuota = $leaveRequest->user->leaveQuota;
-        $leaveQuota->used_days += $leaveRequest->total_days;
-        $leaveQuota->remaining_days -= $leaveRequest->total_days;
-        $leaveQuota->save();
-
-        return back()->with('success', 'Pengajuan cuti berhasil disetujui!');
-    }
-
-    public function reject(Request $request, LeaveRequest $leaveRequest)
-    {
-        $validated = $request->validate([
-            'rejection_reason' => 'required|string',
-        ]);
-
-        $leaveRequest->update([
-            'status' => 'rejected',
-            'rejection_reason' => $validated['rejection_reason'],
-        ]);
-
-        return back()->with('success', 'Pengajuan cuti ditolak.');
-    }
-
-    private function calculateWorkDays($startDate, $endDate)
-    {
-        $start = Carbon::parse($startDate);
-        $end = Carbon::parse($endDate);
-        $workDays = 0;
-
-        while ($start->lte($end)) {
-            // Hitung hanya hari Senin-Jumat
-            if ($start->isWeekday()) {
-                $workDays++;
-            }
-            $start->addDay();
-        }
-
-        return $workDays;
-    }
+    // --- Fungsi Approval untuk Ketua Divisi & HRD akan kita tambahkan nanti ---
+    // (Fokus Karyawan dulu)
+    public function approve(Request $request, LeaveRequest $leaveRequest) { /* ... */ }
+    public function reject(Request $request, LeaveRequest $leaveRequest) { /* ... */ }
 }
