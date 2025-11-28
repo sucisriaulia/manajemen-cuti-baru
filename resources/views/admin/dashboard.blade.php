@@ -58,7 +58,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 {{ (auth()->user()->role === 'admin' || auth()->user()->role === 'hrd') ? 'lg:grid-cols-2' : '' }} gap-6">
+            <div class="grid grid-cols-1 {{ (auth()->user()->role !== 'karyawan') ? 'lg:grid-cols-2' : '' }} gap-6">
                 
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
@@ -122,29 +122,57 @@
                             <h3 class="text-lg font-semibold text-gray-800 mb-2">Sedang Cuti Hari Ini</h3>
                             <ul class="divide-y divide-gray-200">
                                 @forelse($employeesOnLeave as $leave)
-                                <li class="py-2">
-                                    <div class="text-sm font-medium">{{ $leave->user->name }}</div>
-                                    <div class="text-xs text-gray-500">Sampai: {{ $leave->end_date->format('d M Y') }}</div>
+                                <li class="py-2"><div class="text-sm font-medium">{{ $leave->user->name }}</div><div class="text-xs text-gray-500">Sampai: {{ $leave->end_date->format('d M Y') }}</div></li>
+                                @empty <p class="text-sm text-gray-500">Tidak ada.</p> @endforelse
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-indigo-500">
+                        <div class="p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Daftar Divisi</h3>
+                            <div class="flex flex-wrap gap-2">
+                                @forelse($divisionList as $div) <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-semibold">{{ $div->division }}</span>
+                                @empty <p class="text-sm text-gray-500">Kosong.</p> @endforelse
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                @if(auth()->user()->role === 'ketua_divisi')
+                <div class="space-y-6">
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-cyan-500">
+                        <div class="p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Anggota Divisi {{ auth()->user()->division }}</h3>
+                            <ul class="divide-y divide-gray-200">
+                                @forelse($divisionMembers as $member)
+                                <li class="py-2 flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-800">{{ $member->name }}</p>
+                                        <p class="text-xs text-gray-500">{{ $member->email }}</p>
+                                    </div>
+                                    <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Aktif</span>
                                 </li>
                                 @empty
-                                <p class="text-sm text-gray-500">Tidak ada karyawan sedang cuti.</p>
+                                <p class="text-sm text-gray-500">Belum ada anggota.</p>
                                 @endforelse
                             </ul>
                         </div>
                     </div>
 
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-indigo-500">
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-pink-500">
                         <div class="p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Daftar Divisi</h3>
-                            <div class="flex flex-wrap gap-2">
-                                @forelse($divisionList as $div)
-                                <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-semibold">
-                                    {{ $div->division }}
-                                </span>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Sedang Cuti Minggu Ini</h3>
+                            <ul class="divide-y divide-gray-200">
+                                @forelse($onLeaveThisWeek as $leave)
+                                <li class="py-2">
+                                    <div class="text-sm font-medium">{{ $leave->user->name }}</div>
+                                    <div class="text-xs text-gray-500">{{ $leave->start_date->format('d M') }} - {{ $leave->end_date->format('d M') }}</div>
+                                </li>
                                 @empty
-                                <p class="text-sm text-gray-500">Belum ada divisi terdaftar.</p>
+                                <p class="text-sm text-gray-500">Tidak ada yang cuti minggu ini.</p>
                                 @endforelse
-                            </div>
+                            </ul>
                         </div>
                     </div>
                 </div>

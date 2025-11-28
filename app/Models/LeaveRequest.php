@@ -17,10 +17,11 @@ class LeaveRequest extends Model
         'end_date',
         'total_days',
         'reason',
-        'address_during_leave',
+        'address_during_leave', // Pastikan nama ini sesuai database
         'emergency_contact',
         'status',
         'rejection_reason',
+        'doctor_note',          // TAMBAHAN: Kolom surat dokter
     ];
 
     protected $casts = [
@@ -33,7 +34,6 @@ class LeaveRequest extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Method untuk menghitung total hari kerja
     public function calculateWorkDays($startDate, $endDate)
     {
         $start = Carbon::parse($startDate);
@@ -41,7 +41,6 @@ class LeaveRequest extends Model
         $workDays = 0;
 
         while ($start->lte($end)) {
-            // Hitung hanya hari Senin-Jumat
             if ($start->isWeekday()) {
                 $workDays++;
             }

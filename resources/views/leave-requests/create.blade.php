@@ -12,7 +12,7 @@
                     
                     @if ($errors->any())
                         <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-                            <strong class="font-bold">Gagal!</strong> Periksa inputan Anda:<br>
+                            <strong class="font-bold">Gagal!</strong><br>
                             <ul class="list-disc list-inside">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -21,12 +21,14 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('leave-requests.store') }}">
-                        @csrf <div class="mb-4">
+                    <form method="POST" action="{{ route('leave-requests.store') }}" enctype="multipart/form-data">
+                        @csrf
+
+                        <div class="mb-4">
                             <label for="leave_type" class="block text-gray-700 text-sm font-bold mb-2">Jenis Cuti</label>
                             <select name="leave_type" id="leave_type" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                                <option value="tahunan">Cuti Tahunan (Mengurangi Kuota)</option>
-                                <option value="sakit">Cuti Sakit (Perlu Surat Dokter)</option>
+                                <option value="tahunan">Cuti Tahunan (Min H-3)</option>
+                                <option value="sakit">Cuti Sakit (Wajib Surat Dokter)</option>
                             </select>
                         </div>
 
@@ -43,12 +45,18 @@
 
                         <div class="mb-4">
                             <label for="leave_address" class="block text-gray-700 text-sm font-bold mb-2">Alamat Selama Cuti</label>
-                            <textarea name="leave_address" id="leave_address" rows="2" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Masukkan alamat lengkap Anda selama menjalani cuti..." required></textarea>
+                            <textarea name="leave_address" id="leave_address" rows="2" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required></textarea>
                         </div>
 
                         <div class="mb-4">
                             <label for="emergency_contact" class="block text-gray-700 text-sm font-bold mb-2">Nomor Telepon Darurat</label>
-                            <input type="text" name="emergency_contact" id="emergency_contact" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Contoh: 0812xxxx (Istri/Orang Tua)" required>
+                            <input type="text" name="emergency_contact" id="emergency_contact" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="doctor_note" class="block text-gray-700 text-sm font-bold mb-2">Upload Surat Dokter (Wajib jika Sakit)</label>
+                            <input type="file" name="doctor_note" id="doctor_note" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <p class="text-xs text-gray-500 mt-1">Format: PDF/JPG/PNG. Maks 2MB.</p>
                         </div>
 
                         <div class="mb-6">
@@ -57,13 +65,11 @@
                         </div>
 
                         <div class="flex items-center justify-end">
-                            <a href="{{ route('leave-requests.index') }}" class="text-gray-500 hover:text-gray-700 mr-4 font-bold">Batal</a>
                             <button type="submit" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                                 Kirim Pengajuan
                             </button>
                         </div>
                     </form>
-
                 </div>
             </div>
         </div>

@@ -13,7 +13,7 @@ class AdminController extends Controller
     {
         $user = auth()->user();
         
-        // --- 1. LOGIKA JUDUL DINAMIS (TETAP ADA) ---
+        // --- 1. JUDUL DINAMIS ---
         $title = 'Dashboard';
         if ($user->role === 'admin') $title = 'Dashboard Administrator';
         elseif ($user->role === 'hrd') $title = 'Dashboard HRD Manager';
@@ -21,14 +21,13 @@ class AdminController extends Controller
         else $title = 'Dashboard Karyawan';
 
         // ==========================================================
-        // 2. LOGIKA DASHBOARD KARYAWAN (TETAP ADA)
+        // 2. LOGIKA KARYAWAN
         // ==========================================================
         if ($user->role === 'karyawan') {
             $sisaCutis = $user->annual_leave_balance ?? 12;
             $totalCutiSakit = LeaveRequest::where('user_id', $user->id)->where('leave_type', 'sakit')->count();
             $totalPengajuan = LeaveRequest::where('user_id', $user->id)->count();
             
-            // Cari Ketua Divisi
             $ketuaDivisiObj = User::where('division', $user->division)->where('role', 'ketua_divisi')->first();
             $namaKetua = $ketuaDivisiObj ? $ketuaDivisiObj->name : '- Belum ada Ketua -';
 
@@ -53,7 +52,7 @@ class AdminController extends Controller
         // Statistik Umum
         $totalKaryawan = $employeesQuery->count();
         
-        // Total Pengajuan (HRD & Admin melihat BULAN INI sesuai soal)
+        // Total Pengajuan (HRD & Admin melihat BULAN INI)
         if ($user->role === 'admin' || $user->role === 'hrd') {
             $totalPengajuan = LeaveRequest::whereMonth('created_at', Carbon::now()->month)->count();
         } else {
@@ -70,13 +69,14 @@ class AdminController extends Controller
         // 4. DATA TAMBAHAN SESUAI ROLE
         // ==========================================================
         
-        // Variabel Default (Supaya tidak error jika role beda)
         $totalDivisi = 0;
         $newEmployees = collect([]);
         $employeesOnLeave = collect([]);
         $divisionList = collect([]);
+        $divisionMembers = collect([]);     // Variable Baru untuk Ketua Divisi
+        $onLeaveThisWeek = collect([]);     // Variable Baru untuk Ketua Divisi
 
-        // A. KHUSUS ADMIN (TETAP ADA)
+        // A. KHUSUS ADMIN
         if ($user->role === 'admin') {
             $totalDivisi = User::whereNotNull('division')->distinct('division')->count('division');
             $newEmployees = User::where('role', 'karyawan')
@@ -84,20 +84,41 @@ class AdminController extends Controller
                 ->latest()->take(5)->get();
         }
 
-        // B. KHUSUS HRD (DITAMBAHKAN BARU)
+        // B. KHUSUS HRD
         if ($user->role === 'hrd') {
-            // Daftar Karyawan Sedang Cuti (Hari ini ada di antara start dan end date)
             $employeesOnLeave = LeaveRequest::with('user')
                 ->where('status', 'approved')
                 ->whereDate('start_date', '<=', Carbon::now())
                 ->whereDate('end_date', '>=', Carbon::now())
                 ->get();
 
-            // Daftar Semua Divisi
             $divisionList = User::select('division')
                 ->whereNotNull('division')
                 ->where('division', '!=', '')
                 ->distinct()
+                ->get();
+        }
+
+        // C. KHUSUS KETUA DIVISI (Sesuai Soal Hal 45) 
+        if ($user->role === 'ketua_divisi') {
+            // 1. Daftar Anggota Divisi
+            $divisionMembers = User::where('division', $user->division)
+                ->where('role', 'karyawan')
+                ->get();
+
+            // 2. Yang Sedang Cuti Minggu Ini
+            $startOfWeek = Carbon::now()->startOfWeek();
+            $endOfWeek = Carbon::now()->endOfWeek();
+
+            $onLeaveThisWeek = LeaveRequest::with('user')
+                ->whereHas('user', function($q) use ($user) {
+                    $q->where('division', $user->division);
+                })
+                ->where('status', 'approved')
+                ->where(function($query) use ($startOfWeek, $endOfWeek) {
+                    $query->whereBetween('start_date', [$startOfWeek, $endOfWeek])
+                          ->orWhereBetween('end_date', [$startOfWeek, $endOfWeek]);
+                })
                 ->get();
         }
 
@@ -109,12 +130,13 @@ class AdminController extends Controller
             'disetujui',
             'ditolak',
             'recentLeaveRequests',
-            // Data Admin
             'totalDivisi',
             'newEmployees',
-            // Data HRD
             'employeesOnLeave',
-            'divisionList'
+            'divisionList',
+            // Data Ketua Divisi
+            'divisionMembers',
+            'onLeaveThisWeek'
         ));
     }
 
