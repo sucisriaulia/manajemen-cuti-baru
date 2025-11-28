@@ -10,9 +10,19 @@ return new class extends Migration
     {
         Schema::create('divisions', function (Blueprint $table) {
             $table->id();
+            
+            // --- KODE ANDA SEBELUMNYA (TETAP ADA) ---
             $table->string('name');
             $table->string('code')->unique();
             $table->text('description')->nullable();
+            
+            // --- TAMBAHAN WAJIB (AGAR TIDAK ERROR) ---
+            // Kolom ini dibutuhkan oleh Controller untuk menyimpan Ketua Divisi
+            $table->unsignedBigInteger('manager_id')->nullable();
+            
+            // Membuat relasi agar datanya valid (Foreign Key)
+            $table->foreign('manager_id')->references('id')->on('users')->onDelete('set null');
+
             $table->timestamps();
         });
     }

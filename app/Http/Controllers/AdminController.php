@@ -99,7 +99,7 @@ class AdminController extends Controller
                 ->get();
         }
 
-        // C. KHUSUS KETUA DIVISI (Sesuai Soal Hal 45) 
+        // C. KHUSUS KETUA DIVISI (Sesuai Soal Hal 45)
         if ($user->role === 'ketua_divisi') {
             // 1. Daftar Anggota Divisi
             $divisionMembers = User::where('division', $user->division)
@@ -153,5 +153,18 @@ class AdminController extends Controller
 
         $leaveRequests = $query->get();
         return view('admin.leave-requests', compact('leaveRequests'));
+    }
+
+    // --- FUNGSI TAMBAHAN: ADMIN ASSIGN DIVISI ---
+    public function assignDivision(Request $request, User $user)
+    {
+        $request->validate([
+            'division' => 'required|string'
+        ]);
+
+        $user->division = $request->division;
+        $user->save();
+
+        return back()->with('success', "Berhasil memasukkan {$user->name} ke divisi {$request->division}.");
     }
 }
