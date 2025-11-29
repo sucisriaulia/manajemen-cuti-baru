@@ -21,6 +21,10 @@
                         <x-nav-link :href="route('divisions.index')" :active="request()->routeIs('divisions.*')">
                             {{ __('Manajemen Divisi') }}
                         </x-nav-link>
+
+                        <x-nav-link :href="route('holidays.index')" :active="request()->routeIs('holidays.*')">
+                            {{ __('Hari Libur') }}
+                        </x-nav-link>
                     @endif
                 </div>
             </div>
@@ -81,6 +85,10 @@
 
                 <x-responsive-nav-link :href="route('divisions.index')" :active="request()->routeIs('divisions.*')">
                     {{ __('Manajemen Divisi') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('holidays.index')" :active="request()->routeIs('holidays.*')">
+                    {{ __('Hari Libur') }}
                 </x-responsive-nav-link>
             @endif
         </div>

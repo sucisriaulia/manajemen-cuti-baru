@@ -39,19 +39,32 @@ class LeaveRequestController extends Controller
         $tempModel = new LeaveRequest();
         $totalDays = $tempModel->calculateWorkDays($request->start_date, $request->end_date);
         
+        // --- CEK ATURAN CUTI TAHUNAN ---
         if ($request->leave_type === 'tahunan') {
-            $minDate = Carbon::now()->addDays(3);
+            
+            // 1. Cek Masa Kerja (Minimal 1 Tahun) - FITUR PENYEMPURNA
+            if ($user->created_at > Carbon::now()->subYear()) {
+                return back()->withErrors(['leave_type' => 'Maaf, masa kerja Anda belum 1 tahun. Belum berhak mengambil Cuti Tahunan.']);
+            }
+
+            // 2. Cek H-3 (Reset jam ke 00:00 agar validasi tanggal akurat)
+            $minDate = Carbon::now()->addDays(3)->startOfDay();
             if (Carbon::parse($request->start_date)->lt($minDate)) {
                 return back()->withErrors(['start_date' => 'Cuti Tahunan wajib diajukan minimal H-3.']);
             }
+
+            // 3. Cek Kuota
             $currentBalance = $user->annual_leave_balance ?? 12;
             if ($currentBalance < $totalDays) {
                 return back()->withErrors(['leave_type' => "Kuota tidak cukup. Sisa: $currentBalance, Pengajuan: $totalDays hari kerja."]);
             }
+            
+            // Kurangi Kuota
             $user->annual_leave_balance -= $totalDays;
             $user->save();
         }
 
+        // --- CEK CUTI SAKIT ---
         $doctorNotePath = null;
         if ($request->leave_type === 'sakit') {
             if (!$request->hasFile('doctor_note')) {
@@ -60,6 +73,7 @@ class LeaveRequestController extends Controller
             $doctorNotePath = $request->file('doctor_note')->store('doctor_notes', 'public');
         }
 
+        // SIMPAN KE DATABASE
         LeaveRequest::create([
             'user_id'    => $user->id,
             'leave_type' => $request->leave_type,
@@ -132,7 +146,6 @@ class LeaveRequestController extends Controller
         return view('leave-requests.show', compact('leaveRequest'));
     }
 
-    // --- FUNGSI BARU: DOWNLOAD PDF ---
     public function downloadPdf(LeaveRequest $leaveRequest)
     {
         if ($leaveRequest->status !== 'approved') {

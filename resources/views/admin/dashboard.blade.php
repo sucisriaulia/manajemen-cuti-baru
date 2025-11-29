@@ -1,245 +1,106 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ $title }}
-        </h2>
+        Dashboard
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
-            @if(auth()->user()->role === 'karyawan')
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-l-4 border-blue-500">
-                    <div class="p-6"><p class="text-sm text-gray-600 mb-1">Sisa Kuota</p><p class="text-3xl font-bold text-gray-800">{{ $sisaCutis }}</p></div>
-                </div>
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-l-4 border-red-500">
-                    <div class="p-6"><p class="text-sm text-gray-600 mb-1">Cuti Sakit</p><p class="text-3xl font-bold text-gray-800">{{ $totalCutiSakit }}</p></div>
-                </div>
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-l-4 border-purple-500">
-                    <div class="p-6"><p class="text-sm text-gray-600 mb-1">Total Pengajuan</p><p class="text-3xl font-bold text-gray-800">{{ $totalPengajuan }}</p></div>
-                </div>
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-l-4 border-green-500">
-                    <div class="p-6"><p class="text-sm text-gray-600 mb-1">Divisi</p><p class="font-bold text-gray-800">{{ auth()->user()->division ?? '-' }}</p></div>
-                </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        
+        <div class="bg-[#17a2b8] rounded shadow text-white p-4 relative overflow-hidden">
+            <div class="relative z-10">
+                <h3 class="text-3xl font-bold">{{ $sisaCutis ?? $totalKaryawan }}</h3>
+                <p class="text-sm uppercase font-semibold opacity-80">
+                    {{ auth()->user()->role == 'karyawan' ? 'Sisa Kuota Cuti' : 'Total Karyawan' }}
+                </p>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <a href="{{ route('leave-requests.create') }}" class="bg-blue-600 text-white p-4 rounded-lg shadow hover:bg-blue-700 font-bold text-center transition">
-                    + Ajukan Cuti Baru
-                </a>
-                <a href="{{ route('leave-requests.index') }}" class="bg-white border border-gray-300 text-gray-700 p-4 rounded-lg shadow hover:bg-gray-50 font-bold text-center transition">
-                    Lihat Riwayat Cuti
-                </a>
+            <div class="absolute right-2 top-2 opacity-20">
+                <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path></svg>
             </div>
-
-            @else
-            
-            @php
-                $routePrefix = 'ketua_divisi';
-                if(auth()->user()->role === 'admin') $routePrefix = 'admin';
-                elseif(auth()->user()->role === 'hrd') $routePrefix = 'hrd';
-                
-                $linkUrl = route($routePrefix . '.leave-requests');
-            @endphp
-
-            <div class="grid grid-cols-1 md:grid-cols-2 {{ auth()->user()->role === 'admin' ? 'lg:grid-cols-6' : 'lg:grid-cols-5' }} gap-4 mb-6">
-                
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <p class="text-sm text-gray-600 mb-1">Total Karyawan</p>
-                        <p class="text-3xl font-bold text-blue-600">{{ $totalKaryawan }}</p>
-                    </div>
-                </div>
-
-                @if(auth()->user()->role === 'admin')
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <p class="text-sm text-gray-600 mb-1">Total Divisi</p>
-                        <p class="text-3xl font-bold text-indigo-600">{{ $totalDivisi }}</p>
-                    </div>
-                </div>
-                @endif
-
-                <a href="{{ $linkUrl }}" class="block bg-white overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition cursor-pointer">
-                    <div class="p-6">
-                        <p class="text-sm text-gray-600 mb-1">
-                            {{ auth()->user()->role === 'admin' || auth()->user()->role === 'hrd' ? 'Pengajuan Bulan Ini' : 'Total Pengajuan' }}
-                        </p>
-                        <p class="text-3xl font-bold text-gray-800">{{ $totalPengajuan }}</p>
-                    </div>
-                </a>
-
-                <a href="{{ $linkUrl }}" class="block bg-white overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition cursor-pointer border-l-4 border-yellow-400">
-                    <div class="p-6">
-                        <p class="text-sm text-gray-600 mb-1">Menunggu</p>
-                        <p class="text-3xl font-bold text-yellow-600">{{ $menungguApproval }}</p>
-                    </div>
-                </a>
-
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-l-4 border-green-400">
-                    <div class="p-6">
-                        <p class="text-sm text-gray-600 mb-1">Disetujui</p>
-                        <p class="text-3xl font-bold text-green-600">{{ $disetujui }}</p>
-                    </div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-l-4 border-red-400">
-                    <div class="p-6">
-                        <p class="text-sm text-gray-600 mb-1">Ditolak</p>
-                        <p class="text-3xl font-bold text-red-600">{{ $ditolak }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <div class="lg:col-span-2 bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">Pengajuan Terbaru</h3>
-                            <a href="{{ $linkUrl }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Lihat Semua &rarr;</a>
-                        </div>
-
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @forelse($recentLeaveRequests as $request)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-4 py-3 whitespace-nowrap">
-                                            <div class="text-sm font-medium text-gray-900">{{ $request->user->name }}</div>
-                                            <div class="text-xs text-gray-500">{{ $request->user->division ?? '-' }}</div>
-                                        </td>
-                                        <td class="px-4 py-3 whitespace-nowrap">
-                                            <span class="px-2 py-1 text-xs rounded-full {{ $request->leave_type == 'tahunan' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
-                                                {{ ucfirst($request->leave_type) }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3 whitespace-nowrap">
-                                            @if($request->status == 'pending') <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 font-semibold">Menunggu</span>
-                                            @elseif($request->status == 'approved_by_leader') <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 font-semibold">Acc Ketua</span>
-                                            @elseif($request->status == 'approved') <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 font-semibold">Disetujui</span>
-                                            @else <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800 font-semibold">Ditolak</span> @endif
-                                        </td>
-                                        <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                                            <a href="{{ route('leave-requests.show', $request) }}" class="text-indigo-600 hover:text-indigo-900 font-bold hover:underline">Detail</a>
-                                        </td>
-                                    </tr>
-                                    @empty
-                                    <tr>
-                                        <td colspan="4" class="px-4 py-4 text-sm text-gray-500 text-center">Belum ada pengajuan masuk.</td>
-                                    </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="space-y-6">
-                    
-                    @if(auth()->user()->role === 'admin')
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-orange-400">
-                        <div class="p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3">Karyawan Baru</h3>
-                            <p class="text-xs text-gray-500 mb-3">Pilih divisi untuk karyawan:</p>
-                            
-                            @if(session('success'))
-                                <div class="mb-2 text-xs text-green-600 bg-green-100 p-2 rounded">{{ session('success') }}</div>
-                            @endif
-
-                            <ul class="divide-y divide-gray-200">
-                                @forelse($newEmployees as $emp)
-                                <li class="py-3">
-                                    <div class="flex justify-between items-center mb-1">
-                                        <span class="text-sm font-medium">{{ $emp->name }}</span>
-                                        <span class="text-xs text-gray-500">{{ $emp->created_at->format('d M') }}</span>
-                                    </div>
-                                    
-                                    <form action="{{ route('admin.assign-division', $emp->id) }}" method="POST" class="flex space-x-2">
-                                        @csrf
-                                        @method('PATCH')
-                                        
-                                        @if(!$emp->division)
-                                            <select name="division" class="text-xs border-gray-300 rounded p-1 flex-1">
-                                                <option value="" disabled selected>Pilih...</option>
-                                                <option value="IT">IT</option>
-                                                <option value="Finance">Finance</option>
-                                                <option value="Marketing">Marketing</option>
-                                                <option value="HRD">HRD</option>
-                                            </select>
-                                            <button type="submit" class="bg-blue-600 text-white text-xs px-2 py-1 rounded hover:bg-blue-700">OK</button>
-                                        @else
-                                            <span class="text-xs bg-gray-100 px-2 py-1 rounded w-full text-center">{{ $emp->division }}</span>
-                                        @endif
-                                    </form>
-                                </li>
-                                @empty
-                                <p class="text-sm text-gray-500 text-center py-2">Kosong.</p>
-                                @endforelse
-                            </ul>
-                        </div>
-                    </div>
-                    @endif
-
-                    @if(auth()->user()->role === 'ketua_divisi')
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-cyan-500">
-                        <div class="p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3">Anggota Divisi</h3>
-                            <ul class="divide-y divide-gray-200">
-                                @forelse($divisionMembers as $member)
-                                <li class="py-2 flex justify-between">
-                                    <span class="text-sm font-medium">{{ $member->name }}</span>
-                                    <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Aktif</span>
-                                </li>
-                                @empty <p class="text-sm text-gray-500">Belum ada anggota.</p> @endforelse
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-pink-500">
-                        <div class="p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3">Cuti Minggu Ini</h3>
-                            <ul class="divide-y divide-gray-200">
-                                @forelse($onLeaveThisWeek as $leave)
-                                <li class="py-2 text-sm">{{ $leave->user->name }} <span class="text-xs text-gray-500 float-right">{{ $leave->start_date->format('d M') }}</span></li>
-                                @empty <p class="text-sm text-gray-500">Tidak ada.</p> @endforelse
-                            </ul>
-                        </div>
-                    </div>
-                    @endif
-
-                    @if(auth()->user()->role === 'hrd')
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-teal-500">
-                        <div class="p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3">Sedang Cuti Hari Ini</h3>
-                            <ul class="divide-y divide-gray-200">
-                                @forelse($employeesOnLeave as $leave)
-                                <li class="py-2 text-sm">{{ $leave->user->name }} <span class="text-xs text-gray-500 float-right">s/d {{ $leave->end_date->format('d M') }}</span></li>
-                                @empty <p class="text-sm text-gray-500">Tidak ada.</p> @endforelse
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-indigo-500">
-                        <div class="p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3">Daftar Divisi</h3>
-                            <div class="flex flex-wrap gap-2">
-                                @foreach($divisionList as $div) <span class="px-2 py-1 bg-gray-100 text-xs rounded font-medium">{{ $div->division }}</span> @endforeach
-                            </div>
-                        </div>
-                    </div>
-                    @endif
-
-                </div>
-            </div>
-            @endif
         </div>
+
+        <div class="bg-[#ffc107] rounded shadow text-white p-4 relative overflow-hidden">
+            <div class="relative z-10">
+                <h3 class="text-3xl font-bold">{{ $menungguApproval ?? 0 }}</h3>
+                <p class="text-sm uppercase font-semibold opacity-80">Menunggu Approval</p>
+            </div>
+            <div class="absolute right-2 top-2 opacity-20">
+                <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
+            </div>
+        </div>
+
+        <div class="bg-[#28a745] rounded shadow text-white p-4 relative overflow-hidden">
+            <div class="relative z-10">
+                <h3 class="text-3xl font-bold">{{ $disetujui ?? 0 }}</h3>
+                <p class="text-sm uppercase font-semibold opacity-80">Disetujui</p>
+            </div>
+            <div class="absolute right-2 top-2 opacity-20">
+                <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+            </div>
+        </div>
+
+        <div class="bg-[#dc3545] rounded shadow text-white p-4 relative overflow-hidden">
+            <div class="relative z-10">
+                <h3 class="text-3xl font-bold">{{ $ditolak ?? 0 }}</h3>
+                <p class="text-sm uppercase font-semibold opacity-80">Ditolak</p>
+            </div>
+            <div class="absolute right-2 top-2 opacity-20">
+                <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="bg-white rounded-sm shadow-sm border-t-4 border-blue-500 p-6 flex flex-col items-center text-center">
+            
+            @if(auth()->user()->avatar)
+                <img class="h-24 w-24 rounded-full object-cover border-4 border-gray-200 mb-4" src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Avatar">
+            @else
+                <div class="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center text-3xl font-bold text-gray-500 mb-4 border-4 border-gray-300">
+                    {{ substr(auth()->user()->name, 0, 1) }}
+                </div>
+            @endif
+
+            <h3 class="text-xl font-bold text-gray-800">{{ auth()->user()->name }}</h3>
+            <p class="text-sm text-gray-500 mb-4">{{ auth()->user()->email }}</p>
+
+            <a href="{{ route('profile.edit') }}" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition">
+                EDIT PROFILE
+            </a>
+        </div>
+
+        <div class="lg:col-span-2 bg-white rounded-sm shadow-sm p-0 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h3 class="font-bold text-gray-700">Profil Saya</h3>
+            </div>
+            <table class="min-w-full divide-y divide-gray-200">
+                <tbody class="divide-y divide-gray-200">
+                    <tr>
+                        <td class="px-6 py-4 bg-gray-50 w-1/3 text-sm font-bold text-gray-600">Nama Lengkap</td>
+                        <td class="px-6 py-4 text-sm text-gray-800">{{ auth()->user()->name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 bg-gray-50 w-1/3 text-sm font-bold text-gray-600">Divisi</td>
+                        <td class="px-6 py-4 text-sm text-gray-800">
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-bold">
+                                {{ auth()->user()->division ?? '-' }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 bg-gray-50 w-1/3 text-sm font-bold text-gray-600">Kontak (HP)</td>
+                        <td class="px-6 py-4 text-sm text-gray-800">{{ auth()->user()->phone ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 bg-gray-50 w-1/3 text-sm font-bold text-gray-600">Alamat</td>
+                        <td class="px-6 py-4 text-sm text-gray-800">{{ auth()->user()->address ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 bg-gray-50 w-1/3 text-sm font-bold text-gray-600">Role Akun</td>
+                        <td class="px-6 py-4 text-sm text-gray-800 uppercase">{{ auth()->user()->role }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
     </div>
 </x-app-layout>

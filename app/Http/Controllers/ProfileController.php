@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Storage; // Penting untuk hapus/simpan file
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,11 +32,27 @@ class ProfileController extends Controller
             $request->user()->email_verified_at = null;
         }
 
+        // --- LOGIKA UPLOAD FOTO PROFIL ---
+        if ($request->hasFile('avatar')) {
+            // 1. Validasi
+            $request->validate([
+                'avatar' => 'image|mimes:jpeg,png,jpg|max:2048', // Max 2MB
+            ]);
+
+            // 2. Hapus foto lama jika ada (biar server tidak penuh)
+            if ($request->user()->avatar) {
+                Storage::disk('public')->delete($request->user()->avatar);
+            }
+
+            // 3. Simpan foto baru ke folder 'avatars'
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $request->user()->avatar = $path;
+        }
+
         $request->user()->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
-
     /**
      * Delete the user's account.
      */

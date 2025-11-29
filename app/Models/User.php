@@ -22,7 +22,13 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'division'
+        'division',
+        
+        // --- TAMBAHAN BARU (AGAR BISA DISIMPAN) ---
+        'phone',                // Nomor Telepon
+        'address',              // Alamat
+        'annual_leave_balance', // Sisa Cuti
+        'avatar',               // Foto Profil
     ];
 
     /**

@@ -3,9 +3,8 @@
         <h2 class="text-lg font-medium text-gray-900">
             {{ __('Informasi Profil') }}
         </h2>
-
         <p class="mt-1 text-sm text-gray-600">
-            {{ __("Perbarui informasi profil akun dan alamat email Anda.") }}
+            {{ __("Perbarui foto profil, informasi akun, dan alamat email Anda.") }}
         </p>
     </header>
 
@@ -13,9 +12,39 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6" enctype="multipart/form-data">
         @csrf
         @method('patch')
+
+        <div>
+            <x-input-label :value="__('Foto Profil')" />
+            
+            <div class="flex items-center space-x-6 mt-2">
+                <div class="shrink-0">
+                    @if($user->avatar)
+                        <img class="h-20 w-20 object-cover rounded-full border border-gray-300" 
+                             src="{{ asset('storage/' . $user->avatar) }}" 
+                             alt="Foto Profil" />
+                    @else
+                        <div class="h-20 w-20 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold text-gray-500 border border-gray-300">
+                            {{ substr($user->name, 0, 1) }}
+                        </div>
+                    @endif
+                </div>
+                
+                <div class="flex-1">
+                    <input type="file" name="avatar" class="block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-indigo-50 file:text-indigo-700
+                        hover:file:bg-indigo-100" 
+                    accept="image/*" />
+                    <p class="mt-1 text-xs text-gray-500">Format: JPG, PNG. Maks: 2MB.</p>
+                    <x-input-error class="mt-2" :messages="$errors->get('avatar')" />
+                </div>
+            </div>
+        </div>
 
         <div>
             <x-input-label for="name" :value="__('Nama Lengkap')" />
@@ -32,12 +61,10 @@
                 <div>
                     <p class="text-sm mt-2 text-gray-800">
                         {{ __('Your email address is unverified.') }}
-
                         <button form="send-verification" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             {{ __('Click here to re-send the verification email.') }}
                         </button>
                     </p>
-
                     @if (session('status') === 'verification-link-sent')
                         <p class="mt-2 font-medium text-sm text-green-600">
                             {{ __('A new verification link has been sent to your email address.') }}
@@ -60,16 +87,10 @@
         </div>
 
         <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Simpan') }}</x-primary-button>
+            <x-primary-button>{{ __('Simpan Perubahan') }}</x-primary-button>
 
             @if (session('status') === 'profile-updated')
-                <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600"
-                >{{ __('Tersimpan.') }}</p>
+                <p x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 2000)" class="text-sm text-green-600 font-bold">{{ __('Profil Berhasil Diperbarui.') }}</p>
             @endif
         </div>
     </form>

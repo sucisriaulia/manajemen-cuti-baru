@@ -100,4 +100,29 @@
                                 </div>
                             @else
                                 <div class="p-4 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm">
-                                    ⚠ Tidak ada file
+                                    ⚠ Tidak ada file surat dokter yang diunggah.
+                                </div>
+                            @endif
+                        </div>
+                        @endif
+
+                        @if($leaveRequest->status == 'rejected' && $leaveRequest->rejection_reason)
+                        <div class="col-span-1 md:col-span-2 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <p class="text-sm font-bold text-red-700 uppercase">Alasan Penolakan:</p>
+                            <p class="text-red-600 mt-1">{{ $leaveRequest->rejection_reason }}</p>
+                        </div>
+                        @endif
+
+                    </div>
+
+                    <div class="mt-8 border-t pt-6 flex justify-end">
+                        <a href="{{ url()->previous() }}" class="bg-gray-200 text-gray-700 px-5 py-2 rounded font-bold hover:bg-gray-300 transition">
+                            &larr; Kembali
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</x-app-layout>
