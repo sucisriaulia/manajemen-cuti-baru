@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/leave-requests/create', [LeaveRequestController::class, 'create'])->name('leave-requests.create');
     Route::post('/leave-requests', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
     Route::get('/leave-requests/{leaveRequest}', [LeaveRequestController::class, 'show'])->name('leave-requests.show');
+    Route::get('/leave-requests/{leaveRequest}/pdf', [LeaveRequestController::class, 'downloadPdf'])->name('leave-requests.pdf');
     
     // Admin Routes
     Route::prefix('admin')->middleware('admin')->group(function () {
