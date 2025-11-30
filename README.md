@@ -1,59 +1,102 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🏢 Sistem Manajemen Cuti Karyawan (HR System)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem informasi berbasis web untuk mengelola pengajuan, persetujuan, dan pelacakan cuti karyawan secara digital. Aplikasi ini mendukung alur persetujuan bertingkat (Multi-level Approval) dan validasi cuti yang cerdas.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Fitur Unggulan
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 1. Multi-Level User (Role Based Access Control)
+* **Admin:** Mengelola User, Divisi, dan Hari Libur.
+* **HRD:** Melakukan persetujuan akhir (Final Approval) dan melihat rekapitulasi.
+* **Ketua Divisi:** Melakukan verifikasi awal cuti anggota divisinya.
+* **Karyawan:** Mengajukan cuti dan melihat riwayat.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 2. Alur Persetujuan Bertingkat (Workflow)
+* Karyawan mengajukan cuti ➝ Masuk ke **Ketua Divisi** (Verifikasi) ➝ Lanjut ke **HRD** (Approval Final) ➝ Selesai.
+* Status cuti terpantau secara *real-time* (Menunggu, Acc Ketua, Disetujui, Ditolak).
 
-## Learning Laravel
+### 3. Validasi Cuti Cerdas (Smart Validation)
+* **Cek Kuota:** Otomatis menolak jika sisa cuti habis.
+* **Cek Masa Kerja:** Karyawan baru (< 1 tahun) tidak bisa mengajukan Cuti Tahunan.
+* **Validasi Tanggal:**
+    * Cuti Tahunan wajib diajukan minimal H-3.
+    * Tidak boleh mengajukan di tanggal yang *overlap* (bentrok).
+* **Perhitungan Hari Kerja:** Sistem **otomatis melewati** hari Sabtu, Minggu, dan **Hari Libur Nasional** (Tanggal Merah) dalam perhitungan durasi cuti.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 4. Fitur Pendukung Lainnya
+* 📄 **Cetak Surat Izin (PDF):** Surat bukti cuti dapat didownload otomatis setelah status Disetujui Final.
+* 📎 **Upload Surat Dokter:** Wajib lampiran bukti untuk Cuti Sakit.
+* 📅 **Manajemen Hari Libur:** Admin dapat input tanggal merah agar tidak memotong kuota cuti.
+* 👤 **Manajemen Profil:** Update foto profil, nomor HP, dan alamat domisili.
+* 🚫 **Status Akun:** Admin dapat menonaktifkan (blokir) akun karyawan.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🛠️ Teknologi yang Digunakan
+* **Framework:** Laravel 10 / 11
+* **Bahasa:** PHP 8.2+
+* **Database:** MySQL
+* **Frontend:** Blade Templating + Tailwind CSS
+* **PDF Generator:** Barryvdh/DomPDF
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## ⚙️ Cara Instalasi (Installation)
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Ikuti langkah ini untuk menjalankan proyek di komputer lokal Anda:
 
-## Contributing
+1.  **Clone Repository**
+    ```bash
+    git clone [https://github.com/username-anda/nama-repo.git](https://github.com/sucisriaulia/manajemen-cuti-baru.git)
+    cd nama-repo
+    ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+2.  **Install Dependencies**
+    ```bash
+    composer install
+    npm install && npm run build
+    ```
 
-## Code of Conduct
+3.  **Konfigurasi Environment**
+    Duplikat file `.env.example` menjadi `.env`:
+    ```bash
+    cp .env.example .env
+    ```
+    Buka file `.env` dan sesuaikan konfigurasi database (`DB_DATABASE`, dll).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+4.  **Generate Key & Storage Link**
+    ```bash
+    php artisan key:generate
+    php artisan storage:link
+    ```
 
-## Security Vulnerabilities
+5.  **Migrasi Database**
+    ```bash
+    php artisan migrate
+    ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+6.  **Jalankan Server**
+    ```bash
+    php artisan serve
+    ```
+    Buka browser di: `http://127.0.0.1:8000`
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🔑 Akun Demo (Default Login)
+
+Gunakan akun berikut untuk pengujian sistem:
+
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Admin** | `admin@test.com` | `password` |
+| **HRD Manager** | `hrd@test.com` | `password` |
+| **Ketua Divisi** | `ketuait@example.com` | `password` |
+| **Karyawan** | `budi@test.com` | `password` |
+
+---
+
+### 👨‍💻 Author
+Dibuat oleh **[Suci Sri Aulia_H071241067]**
+*Tugas Final Praktikum Pemrograman Web 2025*

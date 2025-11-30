@@ -9,11 +9,24 @@ use Illuminate\Validation\Rules;
 
 class UserController extends Controller
 {
-    // 1. MENAMPILKAN DAFTAR USER
-    public function index()
+    // 1. MENAMPILKAN DAFTAR USER (DENGAN FITUR PENCARIAN)
+    public function index(Request $request)
     {
-        // Ambil semua user, urutkan terbaru
-        $users = User::latest()->get();
+        $query = User::query();
+
+        // Logika Pencarian: Jika ada input 'search', filter data
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('division', 'like', "%{$search}%");
+            });
+        }
+
+        // Ambil data terbaru
+        $users = $query->latest()->get();
+        
         return view('admin.users.index', compact('users'));
     }
 
@@ -31,8 +44,9 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'string'],
-            'division' => ['nullable', 'string'], // Opsional saat create
+            'division' => ['nullable', 'string'],
             'annual_leave_balance' => ['required', 'integer', 'min:0'],
+            'is_active' => ['required', 'boolean'],
         ]);
 
         User::create([
@@ -42,24 +56,25 @@ class UserController extends Controller
             'role' => $request->role,
             'division' => $request->division,
             'annual_leave_balance' => $request->annual_leave_balance,
+            'is_active' => $request->is_active,
         ]);
 
         return redirect()->route('users.index')->with('success', 'User berhasil ditambahkan.');
     }
 
-    // --- INI FUNGSI TAMBAHAN UNTUK LIHAT DETAIL (SHOW) ---
+    // 4. LIHAT DETAIL USER
     public function show(User $user)
     {
         return view('admin.users.show', compact('user'));
     }
 
-    // 4. FORM EDIT USER
+    // 5. FORM EDIT USER
     public function edit(User $user)
     {
         return view('admin.users.edit', compact('user'));
     }
 
-    // 5. UPDATE USER
+    // 6. UPDATE USER
     public function update(Request $request, User $user)
     {
         $request->validate([
@@ -68,16 +83,16 @@ class UserController extends Controller
             'role' => ['required', 'string'],
             'division' => ['nullable', 'string'],
             'annual_leave_balance' => ['required', 'integer'],
+            'is_active' => ['required', 'boolean'],
         ]);
 
-        // Update data dasar
         $user->name = $request->name;
         $user->email = $request->email;
         $user->role = $request->role;
         $user->division = $request->division;
         $user->annual_leave_balance = $request->annual_leave_balance;
+        $user->is_active = $request->is_active;
 
-        // Update password hanya jika diisi
         if ($request->filled('password')) {
             $request->validate([
                 'password' => ['confirmed', Rules\Password::defaults()],
@@ -90,10 +105,9 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'Data user berhasil diperbarui.');
     }
 
-    // 6. HAPUS USER
+    // 7. HAPUS USER
     public function destroy(User $user)
     {
-        // Cegah menghapus diri sendiri
         if ($user->id === auth()->id()) {
             return back()->with('error', 'Anda tidak bisa menghapus akun sendiri.');
         }

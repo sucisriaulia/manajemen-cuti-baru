@@ -8,6 +8,24 @@ use Illuminate\Http\Request;
 
 class DivisionController extends Controller
 {
+    // --- FITUR TAMBAHAN: LIHAT ANGGOTA DIVISI ---
+    public function show(Division $division)
+    {
+        // Ambil data divisi beserta anggotanya (users)
+        // Pastikan relasi 'members' sudah ada di Model Division
+        $division->load('members'); 
+        return view('admin.divisions.show', compact('division'));
+    }
+
+    // --- FITUR TAMBAHAN: KELUARKAN ANGGOTA ---
+    public function removeMember(User $user)
+    {
+        // Kosongkan divisi user
+        $user->division = null;
+        $user->save();
+
+        return back()->with('success', 'Anggota berhasil dikeluarkan dari divisi.');
+    }
     // 1. MENAMPILKAN DAFTAR DIVISI
     public function index()
     {

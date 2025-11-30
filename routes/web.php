@@ -54,8 +54,11 @@ Route::middleware('auth')->group(function () {
         // Resource Controllers
         Route::resource('users', UserController::class);
         Route::resource('divisions', DivisionController::class);
+
+        // --- TAMBAHAN BARU: Route untuk mengeluarkan anggota dari divisi ---
+        Route::patch('/divisions/remove-member/{user}', [DivisionController::class, 'removeMember'])->name('divisions.remove-member');
         
-        // Perhatikan baris ini yang tadi error (Pastikan lengkap)
+        // Route Hari Libur
         Route::resource('holidays', HolidayController::class)->only(['index', 'store', 'destroy']);
     });
     
