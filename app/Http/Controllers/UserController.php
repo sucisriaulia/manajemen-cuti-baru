@@ -47,6 +47,12 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User berhasil ditambahkan.');
     }
 
+    // --- INI FUNGSI TAMBAHAN UNTUK LIHAT DETAIL (SHOW) ---
+    public function show(User $user)
+    {
+        return view('admin.users.show', compact('user'));
+    }
+
     // 4. FORM EDIT USER
     public function edit(User $user)
     {
